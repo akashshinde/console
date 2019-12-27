@@ -10,14 +10,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
+	"net/http"
 )
 
 var settings = cli.New()
 
-func GetActionConfigurations(host, ns, token string) *action.Configuration {
+func GetActionConfigurations(host, ns, token string, httpClient *http.Client) *action.Configuration {
 	conf := &rest.Config{
 		Host:        host,
 		BearerToken: token,
+		Transport: httpClient.Transport,
 	}
 	clientset, _ := kubernetes.NewForConfig(conf)
 	tr := true
