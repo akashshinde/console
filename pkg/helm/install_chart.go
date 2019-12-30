@@ -1,14 +1,12 @@
-package helm_actions
+package helm
 
 import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/cli"
 )
 
-func UpgradeRelease(ns, name, url string, conf *action.Configuration) (interface{}, error) {
+func InstallChart(ns, name, url string, conf *action.Configuration) (interface{}, error) {
 	cmd := action.NewInstall(conf)
-	cmd.Namespace = ns
 
 	name, chart, err := cmd.NameAndChart([]string{name, url})
 	if err != nil {
@@ -16,7 +14,7 @@ func UpgradeRelease(ns, name, url string, conf *action.Configuration) (interface
 	}
 	cmd.ReleaseName = name
 
-	cp, err := cmd.ChartPathOptions.LocateChart(chart, cli.New())
+	cp, err := cmd.ChartPathOptions.LocateChart(chart, settings)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +24,10 @@ func UpgradeRelease(ns, name, url string, conf *action.Configuration) (interface
 		return nil, err
 	}
 
-	upgradeCmd := action.NewUpgrade(conf)
-	release, err := upgradeCmd.Run(name, ch, nil)
-	return release, err
+	cmd.Namespace = ns
+	release, err := cmd.Run(ch, nil)
+	if err != nil {
+		return nil, err
+	}
+	return release, nil
 }

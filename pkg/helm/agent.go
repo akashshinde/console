@@ -1,4 +1,4 @@
-package helm_agent
+package helm
 
 import (
 	"helm.sh/helm/v3/pkg/action"
@@ -15,11 +15,12 @@ import (
 
 var settings = cli.New()
 
-func GetActionConfigurations(host, ns, token string, httpClient *http.Client) *action.Configuration {
+func GetActionConfigurations(host, ns, token string, transport *http.RoundTripper) *action.Configuration {
+
 	conf := &rest.Config{
 		Host:        host,
 		BearerToken: token,
-		Transport: httpClient.Transport,
+		Transport:   *transport,
 	}
 	clientset, _ := kubernetes.NewForConfig(conf)
 	tr := true
@@ -27,6 +28,7 @@ func GetActionConfigurations(host, ns, token string, httpClient *http.Client) *a
 		APIServer:   &host,
 		Insecure:    &tr,
 		BearerToken: &token,
+		Namespace: &ns,
 	}
 	store := createStorage(ns, clientset)
 	config := &action.Configuration{

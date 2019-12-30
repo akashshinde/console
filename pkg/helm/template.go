@@ -1,4 +1,4 @@
-package helm_actions
+package helm
 
 import (
 	"bytes"

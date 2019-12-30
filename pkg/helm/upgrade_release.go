@@ -1,4 +1,4 @@
-package helm_actions
+package helm
 
 import (
 	"helm.sh/helm/v3/pkg/action"
@@ -6,7 +6,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 )
 
-func InstallChart(ns, name, url string, conf *action.Configuration) (interface{}, error) {
+func UpgradeRelease(ns, name, url string, conf *action.Configuration) (interface{}, error) {
 	cmd := action.NewInstall(conf)
 	cmd.Namespace = ns
 
@@ -26,9 +26,7 @@ func InstallChart(ns, name, url string, conf *action.Configuration) (interface{}
 		return nil, err
 	}
 
-	release, err := cmd.Run(ch, nil)
-	if err != nil {
-		return nil, err
-	}
-	return release, nil
+	upgradeCmd := action.NewUpgrade(conf)
+	release, err := upgradeCmd.Run(name, ch, nil)
+	return release, err
 }

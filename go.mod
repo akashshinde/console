@@ -8,6 +8,7 @@ require (
 	github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
 	github.com/gorilla/websocket v1.4.0
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
+	github.com/spf13/pflag v1.0.5
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/grpc v1.24.0
 	gopkg.in/square/go-jose.v2 v2.4.1 // indirect

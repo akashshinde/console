@@ -1,4 +1,4 @@
-package helm_actions
+package helm
 
 import (
 	"helm.sh/helm/v3/pkg/action"
@@ -6,7 +6,7 @@ import (
 
 func ListReleases(conf *action.Configuration) (interface{}, error) {
 	cmd := action.NewList(conf)
-	cmd.AllNamespaces = true
+	//cmd.AllNamespaces = true
 	cmd.All = true
 
 	releases, err := cmd.Run()
