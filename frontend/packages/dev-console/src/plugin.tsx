@@ -104,6 +104,17 @@ const plugin: Plugin<ConsumedExtensions> = [
     },
   },
   {
+    type: 'NavItem/Href',
+    properties: {
+      perspective: 'dev',
+      componentProps: {
+        name: 'Helm Releases',
+        href: '/add',
+        testID: '+helm-releases-header',
+      },
+    },
+  },
+  {
     type: 'NavItem/ResourceNS',
     properties: {
       perspective: 'dev',
