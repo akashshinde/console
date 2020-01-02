@@ -109,8 +109,19 @@ const plugin: Plugin<ConsumedExtensions> = [
       perspective: 'dev',
       componentProps: {
         name: 'Helm Releases',
-        href: '/add',
+        href: '/helm/releases',
         testID: '+helm-releases-header',
+      },
+    },
+  },
+  {
+    type: 'NavItem/Href',
+    properties: {
+      perspective: 'dev',
+      componentProps: {
+        name: 'Helm Catalog',
+        href: '/helm/install',
+        testID: '+helm-install-header',
       },
     },
   },
@@ -388,11 +399,29 @@ const plugin: Plugin<ConsumedExtensions> = [
     type: 'Page/Route',
     properties: {
       exact: true,
-      path: ['/import/all-namespaces', '/import/ns/:ns'],
+      path: ['/add/all-namespaces', '/add/ns/:ns'],
       loader: async () =>
-        (await import(
-          './components/import/ImportPage' /* webpackChunkName: "dev-console-import" */
-        )).default,
+        (await import('./components/AddPage' /* webpackChunkName: "dev-console-add" */)).default,
+    },
+  },
+  {
+    type: 'Page/Route',
+    properties: {
+      exact: true,
+      path: ['/helm/releases', 'helm/releases/ns/:ns'],
+      loader: async () =>
+        (await import('./components/HelmReleases' /* webpackChunkName: "dev-console-import" */))
+          .default,
+    },
+  },
+  {
+    type: 'Page/Route',
+    properties: {
+      exact: true,
+      path: ['/helm/install', 'helm/install/ns/:ns'],
+      loader: async () =>
+        (await import('./components/HelmCharts' /* webpackChunkName: "dev-console-import" */))
+          .default,
     },
   },
   {

@@ -294,9 +294,12 @@ func (s *Server) HTTPHandler() http.Handler {
 	}
 
 	handle("/api/console/version", authHandler(s.versionHandler))
-	handle("/api/console/helm/template", authHandlerWithUser(s.handleHelmRenderManifests))
+
+	// Helm Specific Endpoints
 	handle("/api/console/helm/install", authHandlerWithUser(s.handleHelmInstall))
 	handle("/api/console/helm/list", authHandlerWithUser(s.handleHelmList))
+	handle("/api/console/helm/template", authHandlerWithUser(s.handleHelmRenderManifests))
+
 	mux.HandleFunc(s.BaseURL.Path, s.indexHandler)
 
 	return securityHeadersMiddleware(http.Handler(mux))
