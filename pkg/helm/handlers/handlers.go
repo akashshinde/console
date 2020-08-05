@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/coreos/pkg/capnslog"
@@ -22,7 +23,8 @@ import (
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/openshift/console", "helm")
+	plog                    = capnslog.NewPackageLogger("github.com/openshift/console", "helm")
+	k8sInClusterBearerToken = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
 func New(apiUrl string, transport http.RoundTripper, defaultRepoCACert []byte) *helmHandlers {
@@ -254,7 +256,12 @@ func (h *helmHandlers) HandleGetReleaseHistory(user *auth.User, w http.ResponseW
 }
 
 func (h *helmHandlers) HandleGetRepos(user *auth.User, w http.ResponseWriter, r *http.Request) {
-	conf := h.getActionConfigurations(h.ApiServerHost, "", user.Token, &h.Transport)
+	token, err := ioutil.ReadFile(k8sInClusterBearerToken)
+	if err != nil {
+		serverutils.SendResponse(w, http.StatusInternalServerError, serverutils.ApiError{Err: fmt.Sprintf("Failed to get k8s user token: %v", err)})
+		return
+	}
+	conf := h.getActionConfigurations(h.ApiServerHost, "", string(token), &h.Transport)
 	config, err := conf.RESTClientGetter.ToRESTConfig()
 	if err != nil {
 		serverutils.SendResponse(w, http.StatusInternalServerError, serverutils.ApiError{Err: fmt.Sprintf("Failed to get k8s config: %v", err)})
