@@ -17,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"github.com/openshift/console/pkg/crypto"
@@ -36,8 +35,8 @@ const (
 )
 
 type helmRepo struct {
-	Name    string
-	Url     *url.URL
+	Name            string
+	Url             *url.URL
 	TlsClientConfig *tls.Config
 }
 
@@ -86,7 +85,6 @@ func (hr helmRepo) IndexFile() (*repo.IndexFile, error) {
 	}
 	return &indexFile, nil
 }
-
 
 type HelmRepoGetter interface {
 	List() ([]*helmRepo, error)
@@ -200,7 +198,6 @@ func (b helmRepoGetter) secretValue(name string, dataField string) ([]byte, erro
 	return nil, errors.New(fmt.Sprintf("Failed to find %s key in secret %s", dataField, name))
 }
 
-
 func (b *helmRepoGetter) List() ([]*helmRepo, error) {
 	var helmRepos []*helmRepo
 	repos, err := b.Client.Resource(helmChartRepositoryGVK).List(context.TODO(), v1.ListOptions{})
@@ -219,10 +216,9 @@ func (b *helmRepoGetter) List() ([]*helmRepo, error) {
 	return helmRepos, nil
 }
 
-func NewRepoGetter(client dynamic.Interface, corev1Client corev1.CoreV1Interface) (HelmRepoGetter) {
+func NewRepoGetter(client dynamic.Interface, corev1Client corev1.CoreV1Interface) HelmRepoGetter {
 	return &helmRepoGetter{
-		Client:                   client,
-		CoreClient:               corev1Client,
+		Client:     client,
+		CoreClient: corev1Client,
 	}
 }
-

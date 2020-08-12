@@ -22,7 +22,6 @@ type config struct {
 	repoCaFile string
 }
 
-
 func RegisterFlags(fs *flag.FlagSet) *config {
 
 	cfg := new(config)
@@ -52,7 +51,7 @@ func (cfg *config) Configure() {
 
 	DefaultRepo = helmRepo{
 		Name: "redhat-helm-charts",
-		Url: repoURL,
+		Url:  repoURL,
 		TlsClientConfig: &tls.Config{
 			RootCAs:      rootCAs,
 			CipherSuites: crypto.DefaultCiphers(),

@@ -383,9 +383,9 @@ func (s *Server) HTTPHandler() http.Handler {
 	handle("/api/helm/charts/index.yaml", helmhandlerspkg.NewIndexHandler(func() (*rest.Config, error) {
 		if s.StaticUser != nil {
 			return &rest.Config{
-				Host: s.KubeAPIServerURL,
+				Host:        s.KubeAPIServerURL,
 				BearerToken: s.StaticUser.Token,
-				Transport: s.K8sClient.Transport,
+				Transport:   s.K8sClient.Transport,
 			}, nil
 		}
 		return rest.InClusterConfig()

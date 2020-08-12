@@ -245,14 +245,21 @@ func (h *helmHandlers) HandleGetReleaseHistory(user *auth.User, w http.ResponseW
 
 type indexHandler struct {
 	restConfigProvider chartproxy.RestConfigProvider
+	proxyOptions       []chartproxy.ProxyOption
+	newProxy           func() (chartproxy.IndexFileGetter, error)
 }
 
-func NewIndexHandler(restConfigProvider chartproxy.RestConfigProvider) (*indexHandler) {
-	return &indexHandler{restConfigProvider: restConfigProvider}
+func NewIndexHandler(restConfigProvider chartproxy.RestConfigProvider) *indexHandler {
+	return &indexHandler{
+		restConfigProvider: restConfigProvider,
+		newProxy: func() (getter chartproxy.IndexFileGetter, err error) {
+			return chartproxy.New(restConfigProvider)
+		},
+	}
 }
 
 func (h *indexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	proxy, err := chartproxy.New(h.restConfigProvider)
+	proxy, err := h.newProxy()
 
 	if err != nil {
 		serverutils.SendResponse(w, http.StatusInternalServerError, serverutils.ApiError{Err: fmt.Sprintf("Failed to get k8s config: %v", err)})

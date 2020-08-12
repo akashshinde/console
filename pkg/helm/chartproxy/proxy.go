@@ -4,31 +4,38 @@ import (
 	"helm.sh/helm/v3/pkg/repo"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
+	"k8s.io/client-go/rest"
 )
 
 type proxy struct {
 	config *rest.Config
-	dynamicClient dynamic.Interface
-	coreV1Client v1.CoreV1Interface
+
+	DynamicClient  dynamic.Interface
+	coreV1Client   v1.CoreV1Interface
 	helmRepoGetter HelmRepoGetter
+
+	IndexFileGetter
 }
+
+type IndexFileGetter interface {
+	IndexFile() (*repo.IndexFile, error)
+}
+
 type RestConfigProvider func() (*rest.Config, error)
 
-type ProxyOption func(p *proxy) (error)
+type ProxyOption func(p *proxy) error
 
-func dynamicKubeClientProvider(p *proxy) (error) {
+func dynamicKubeClientProvider(p *proxy) error {
 	client, err := dynamic.NewForConfig(p.config)
 	if err != nil {
 		return err
 	}
-	p.dynamicClient = client
+	p.DynamicClient = client
 	return nil
 }
 
-func coreClientProvider(p *proxy) (error) {
+func coreClientProvider(p *proxy) error {
 	client, err := kubernetes.NewForConfig(p.config)
 	if err != nil {
 		return err
@@ -37,9 +44,9 @@ func coreClientProvider(p *proxy) (error) {
 	return nil
 }
 
-var defaultOptions = []ProxyOption{ dynamicKubeClientProvider, coreClientProvider}
+var defaultOptions = []ProxyOption{dynamicKubeClientProvider, coreClientProvider}
 
-func New(k8sConfig RestConfigProvider, opts ...ProxyOption) (*proxy, error) {
+func New(k8sConfig RestConfigProvider, opts ...ProxyOption) (IndexFileGetter, error) {
 	config, err := k8sConfig()
 	if err != nil {
 		return nil, err
@@ -55,7 +62,7 @@ func New(k8sConfig RestConfigProvider, opts ...ProxyOption) (*proxy, error) {
 	for _, opt := range opts {
 		opt(p)
 	}
-	p.helmRepoGetter = NewRepoGetter(p.dynamicClient, p.coreV1Client)
+	p.helmRepoGetter = NewRepoGetter(p.DynamicClient, p.coreV1Client)
 	return p, nil
 }
 

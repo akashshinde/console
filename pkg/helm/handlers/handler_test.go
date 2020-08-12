@@ -21,6 +21,7 @@ import (
 
 	"github.com/openshift/console/pkg/auth"
 	"github.com/openshift/console/pkg/helm/actions"
+	"github.com/openshift/console/pkg/helm/chartproxy"
 )
 
 var fakeReleaseList = []*release.Release{
@@ -138,6 +139,21 @@ func fakeHelmGetChartRepos(indexFile *repo.IndexFile, err error) func(c dynamic.
 func fakeDynamicClient(err error) func(conf *rest.Config) (dynamic.Interface, error) {
 	return func(conf *rest.Config) (dynamic.Interface, error) {
 		return fake.NewSimpleDynamicClient(runtime.NewScheme()), err
+	}
+}
+
+type FakeIndexFileGetter struct {
+	repo *repo.IndexFile
+	chartproxy.IndexFileGetter
+}
+
+func (i FakeIndexFileGetter) IndexFile() (*repo.IndexFile, error) {
+	return i.repo, nil
+}
+
+func fakeProxy(repoIndex *repo.IndexFile) chartproxy.IndexFileGetter {
+	return FakeIndexFileGetter{
+		repo: repoIndex,
 	}
 }
 
@@ -695,20 +711,26 @@ func TestHelmHandlers_HandleGetRepos(t *testing.T) {
 			indexFile:        nil,
 			httpStatusCode:   http.StatusInternalServerError,
 			fakeError:        errors.New("Fake error"),
-			expectedResponse: "{\"error\":\"Failed to get k8s dynamic client: Fake error\"}",
+			expectedResponse: `{"error":"Failed to get k8s config: Fake error"}`,
 		},
 	}
 
 	for _, tt := range tests {
-		handlers := fakeHelmHandler()
 		var request *http.Request
-
-		handlers.getHelmIndexFile = fakeHelmGetChartRepos(tt.indexFile, tt.fakeError)
-		handlers.getDynamicClient = fakeDynamicClient(tt.fakeError)
 
 		request = httptest.NewRequest(http.MethodGet, "/api/helm/charts/index.yaml", strings.NewReader(""))
 		response := httptest.NewRecorder()
-		handlers.HandleGetIndex(&auth.User{}, response, request)
+
+		handler := indexHandler{
+			restConfigProvider: func() (config *rest.Config, err error) {
+				return &rest.Config{}, nil
+			},
+			newProxy: func() (proxy chartproxy.IndexFileGetter, err error) {
+				return fakeProxy(tt.indexFile), tt.fakeError
+			},
+		}
+
+		handler.ServeHTTP(response, request)
 
 		if tt.expectedResponse == "" && tt.indexFile != nil {
 			expectedResponse, err := yaml.Marshal(tt.indexFile)
